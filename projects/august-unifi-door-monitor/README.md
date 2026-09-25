@@ -50,6 +50,7 @@ terminals so UniFi Access "sees" a normal sensor closure/opening.
 
 Full wiring diagram and bill of materials: [`docs/wiring-diagram.md`](docs/wiring-diagram.md)
 Design notes and protocol details: [`docs/architecture.md`](docs/architecture.md)
+3D printable enclosure (Pi Zero W + relay module): [`docs/enclosure.md`](docs/enclosure.md)
 
 ## Repo layout
 
@@ -60,7 +61,11 @@ august-unifi-door-monitor/
 ├── config.example.yaml
 ├── docs/
 │   ├── architecture.md
-│   └── wiring-diagram.md
+│   ├── wiring-diagram.md
+│   └── enclosure.md
+├── hardware/
+│   └── enclosure/
+│       └── enclosure.scad   # parametric OpenSCAD case (Pi Zero W + relay module)
 ├── src/
 │   ├── august_client.py     # yalexs wrapper: auth + poll lock/doorsense state
 │   ├── relay_controller.py  # GPIO relay driver (gpiozero)

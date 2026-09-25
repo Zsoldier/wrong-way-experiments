@@ -1,0 +1,218 @@
+// ============================================================================
+// August <-> UniFi Door Monitor — Pi Zero W + 2-Channel Relay Enclosure
+// ----------------------------------------------------------------------------
+// Parametric OpenSCAD model for a snap/friction-fit project box that houses:
+//   - a Raspberry Pi Zero W (mounted on standoffs, port side facing one end wall)
+//   - a 2-channel opto-isolated relay module (e.g. SunFounder B00E0NTPP4)
+//
+// Render/export:
+//   openscad -o base.stl -D 'part="base"' enclosure.scad
+//   openscad -o lid.stl  -D 'part="lid"'  enclosure.scad
+// Or open in the OpenSCAD GUI and use the `part` variable below / F5 preview.
+//
+// IMPORTANT — verify before printing:
+//   Board hole/port positions below are best-effort from public reference
+//   drawings, not a caliper measurement of your exact board revision.
+//   Print the base only first, test-fit your actual Pi Zero W and relay
+//   module, then adjust the parameters and reprint. See
+//   ../../docs/enclosure.md for the recommended print-test-adjust workflow.
+// ============================================================================
+
+part = "both"; // "base", "lid", or "both" (both = side-by-side preview/render)
+
+// ---- General fit tolerances -------------------------------------------------
+wall            = 2.2;   // outer wall thickness
+floor_t         = 2.2;   // floor thickness
+lid_t           = 2.2;   // lid plate thickness
+fit_clearance   = 0.25;  // general FDM clearance between mating parts
+lip_depth       = 3.0;   // depth of the lid's friction-fit skirt
+lip_gap         = 1.3;   // wall material removed at the top step for the lid skirt
+corner_r        = 3.0;   // outer corner rounding radius
+
+// ---- Raspberry Pi Zero W -----------------------------------------------------
+pi_len          = 65;    // board length (mm), along the port edge
+pi_wid          = 30;    // board width (mm)
+pi_standoff_h   = 3.0;   // standoff height under the board (clears bottom-side solder)
+pi_hole_d       = 2.8;   // clearance hole for M2.5 self-tapping screw
+pi_hole_inset_x = 3.5;   // hole center inset from short edges
+pi_hole_inset_y = 3.5;   // hole center inset from long edges
+pi_zone_pad     = 4;     // clearance around the Pi footprint inside the case
+
+// Port cutouts along the Pi's port-side edge (mini HDMI, USB, micro-USB PWR).
+// Positions are approximate + intentionally oversized — verify/trim to fit.
+pi_port_wall_h    = 6;     // cutout height (mm)
+pi_port_wall_zlo  = pi_standoff_h + 1; // cutout bottom Z, just above the board
+pi_ports = [ // [center_x_from_left, width]
+  [10, 8],   // mini HDMI
+  [32, 8],   // USB (OTG)
+  [54, 9],   // micro-USB PWR IN
+];
+
+// ---- 2-Channel Relay Module (e.g. SunFounder, ~50.5 x 38.5 x 18.5mm) --------
+relay_len         = 50.5;
+relay_wid         = 38.5;
+relay_height      = 18.5;  // tallest point above its own PCB underside
+relay_standoff_h  = 3.0;
+relay_hole_d      = 3.4;   // clearance hole for M3 screw (board holes ~3.1mm)
+relay_hole_inset  = 3.0;   // hole center inset from each edge (approx — verify)
+relay_zone_pad    = 4;
+
+// Wire exit slot for the 4 dry-contact leads (DPS +/-, AUX +/-) leaving the case
+wire_slot_w = 14;
+wire_slot_h = 6;
+
+// ---- Layout: Pi zone | wire channel | Relay zone, side by side -------------
+gap_between_zones = 8;
+
+pi_zone_w    = pi_len + 2*pi_zone_pad;
+pi_zone_d    = pi_wid + 2*pi_zone_pad;
+relay_zone_w = relay_len + 2*relay_zone_pad;
+relay_zone_d = relay_wid + 2*relay_zone_pad;
+
+inner_w = pi_zone_w + gap_between_zones + relay_zone_w;
+inner_d = max(pi_zone_d, relay_zone_d);
+
+outer_w = inner_w + 2*wall;
+outer_d = inner_d + 2*wall;
+
+// Case wall height: clear the tallest component (relay module) plus its
+// standoff, plus headroom for wiring looped above it.
+inner_h  = relay_standoff_h + relay_height + 6;
+wall_h   = inner_h + floor_t;
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+module rounded_rect(w, d, r) {
+  hull() {
+    for (x = [r, w - r])
+      for (y = [r, d - r])
+        translate([x, y, 0]) circle(r = r, $fn = 48);
+  }
+}
+
+module standoff(h, hole_d, outer_d = 6) {
+  difference() {
+    cylinder(h = h, d = outer_d, $fn = 32);
+    translate([0, 0, -0.5]) cylinder(h = h + 1, d = hole_d, $fn = 24);
+  }
+}
+
+// ============================================================================
+// Base
+// ============================================================================
+
+module base() {
+  difference() {
+    union() {
+      // Outer shell
+      linear_extrude(height = wall_h)
+        rounded_rect(outer_w, outer_d, corner_r);
+    }
+
+    // Hollow out interior, leaving `wall` thickness on the sides and
+    // `floor_t` on the bottom.
+    translate([wall, wall, floor_t])
+      linear_extrude(height = wall_h)
+        rounded_rect(inner_w, inner_d, max(corner_r - wall, 0.1));
+
+    // Recessed step at the top of the walls so the lid's skirt seats flush.
+    translate([wall - lip_gap, wall - lip_gap, wall_h - lip_depth])
+      linear_extrude(height = lip_depth + 1)
+        rounded_rect(inner_w + 2*lip_gap, inner_d + 2*lip_gap, max(corner_r - wall + lip_gap, 0.1));
+
+    // --- Port cutouts on the Pi end wall (x = 0 face) ---
+    for (p = pi_ports) {
+      cx = p[0]; cw = p[1];
+      translate([-1, wall + pi_zone_pad + cx - cw/2, pi_port_wall_zlo])
+        cube([wall + 2, cw, pi_port_wall_h]);
+    }
+
+    // --- Wire exit slot on the relay end wall (x = outer_w face) ---
+    translate([outer_w - wall - 1, wall + inner_d/2 - wire_slot_w/2, floor_t + 2])
+      cube([wall + 2, wire_slot_w, wire_slot_h]);
+
+    // --- Optional second wire slot on the back long wall for the physical
+    //     door-sensor cross-check lead (see docs/wiring-diagram.md) ---
+    translate([wall + inner_w/2 - wire_slot_w/2, outer_d - wall - 1, floor_t + 2])
+      cube([wire_slot_w, wall + 2, wire_slot_h]);
+  }
+
+  // --- Pi Zero W standoffs ---
+  pi_origin = [wall + pi_zone_pad, wall + (inner_d - pi_wid)/2];
+  for (dx = [pi_hole_inset_x, pi_len - pi_hole_inset_x])
+    for (dy = [pi_hole_inset_y, pi_wid - pi_hole_inset_y])
+      translate([pi_origin[0] + dx, pi_origin[1] + dy, floor_t])
+        standoff(pi_standoff_h, pi_hole_d);
+
+  // --- Relay module standoffs ---
+  relay_origin = [wall + pi_zone_w + gap_between_zones + relay_zone_pad,
+                   wall + (inner_d - relay_wid)/2];
+  for (dx = [relay_hole_inset, relay_len - relay_hole_inset])
+    for (dy = [relay_hole_inset, relay_wid - relay_hole_inset])
+      translate([relay_origin[0] + dx, relay_origin[1] + dy, floor_t])
+        standoff(relay_standoff_h, relay_hole_d);
+}
+
+// ============================================================================
+// Lid
+// ============================================================================
+
+// Local Z convention for this module: z=0 is the tip of the skirt (the part
+// that reaches deepest into the base's recess); the flat top plate sits above
+// it, from z=lip_depth to z=lip_depth+lid_t. Keeping everything at z>=0 avoids
+// negative-Z geometry, which some slicers mishandle.
+module lid() {
+  relay_center_x = wall + pi_zone_w + gap_between_zones + relay_zone_w/2;
+
+  difference() {
+    union() {
+      // Downward friction-fit skirt that plugs into the base's recessed step
+      translate([wall - lip_gap + fit_clearance, wall - lip_gap + fit_clearance, 0])
+        linear_extrude(height = lip_depth)
+          difference() {
+            rounded_rect(inner_w + 2*lip_gap - 2*fit_clearance, inner_d + 2*lip_gap - 2*fit_clearance, max(corner_r - wall + lip_gap, 0.1));
+            offset(delta = -1.6)
+              rounded_rect(inner_w + 2*lip_gap - 2*fit_clearance, inner_d + 2*lip_gap - 2*fit_clearance, max(corner_r - wall + lip_gap, 0.1));
+          }
+
+      // Top plate, flush with the base's outer footprint, sitting on top of the skirt
+      translate([0, 0, lip_depth])
+        linear_extrude(height = lid_t)
+          rounded_rect(outer_w, outer_d, corner_r);
+    }
+
+    // Ventilation slits over the relay's footprint (it's the one part that
+    // gets faintly warm) — cut fully through the top plate.
+    for (i = [-2, -1, 0, 1, 2])
+      translate([relay_center_x + i*6 - 1, wall + 4, lip_depth - 0.5])
+        cube([2, inner_d - 8, lid_t + 1]);
+  }
+}
+
+module thumb_notch() {
+  translate([outer_w/2, outer_d, wall_h/2])
+    rotate([90, 0, 0])
+      cylinder(h = 6, r = 6, $fn = 32);
+}
+
+// ============================================================================
+// Render selection
+// ============================================================================
+
+if (part == "base") {
+  difference() {
+    base();
+    thumb_notch();
+  }
+} else if (part == "lid") {
+  lid();
+} else {
+  difference() {
+    base();
+    thumb_notch();
+  }
+  translate([outer_w + 15, 0, 0])
+    lid();
+}
