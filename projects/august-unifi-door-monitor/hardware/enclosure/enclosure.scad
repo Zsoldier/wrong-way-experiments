@@ -60,6 +60,19 @@ pi_port_slot_x1  = 61;                   // slot end, from the Pi board's left e
 pi_port_slot_h   = 9;                    // slot height (mm) — clears HDMI + both micro-USB bodies
 pi_port_slot_zlo = pi_standoff_h;        // slot bottom Z, right at the board's top surface
 
+// microSD card slot, on the SHORT (30mm) end wall opposite the wire/relay
+// side. Sizing/placement cross-checked against a real-world reference case
+// (Printables model 106295, "Raspberry Pi Zero Case/Zero W Case/Zero 2 W
+// Case") by ray-casting its STL: that case cuts one generous slot roughly
+// centered on the short wall, ~55% of the board width, positioned low
+// (starting near the case floor and extending a bit above board height) —
+// consistent with the Zero's microSD holder sitting on the *underside* of
+// the PCB near that edge. As with the port slot, this uses one forgiving
+// cutout rather than a precisely-dimensioned window.
+pi_sd_slot_w   = 16;              // slot width (mm), centered on the board's short edge
+pi_sd_slot_h   = pi_standoff_h + 5; // slot height (mm): from the floor up past board level
+pi_sd_slot_zlo = floor_t;         // slot bottom Z, right at the case floor
+
 // ---- 2-Channel Relay Module (e.g. SunFounder, ~50.5 x 38.5 x 18.5mm) --------
 relay_len         = 50.5;
 relay_wid         = 38.5;
@@ -143,6 +156,11 @@ module base() {
     // precisely-positioned windows.
     translate([pi_origin[0] + pi_port_slot_x0, -1, pi_port_slot_zlo])
       cube([pi_port_slot_x1 - pi_port_slot_x0, wall + 2, pi_port_slot_h]);
+
+    // --- microSD card slot on the Pi's short end wall (x = 0 face) ---
+    // Opposite end from the wire/relay side; see pi_sd_slot_* comments above.
+    translate([-1, pi_origin[1] + (pi_wid - pi_sd_slot_w)/2, pi_sd_slot_zlo])
+      cube([wall + 2, pi_sd_slot_w, pi_sd_slot_h]);
 
     // --- Wire exit slot on the relay end wall (x = outer_w face) ---
     translate([outer_w - wall - 1, wall + inner_d/2 - wire_slot_w/2, floor_t + 2])

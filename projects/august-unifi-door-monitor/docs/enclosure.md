@@ -24,6 +24,9 @@ clean manifold solids, no errors): [`hardware/enclosure/stl/base.stl`](../hardwa
   - One continuous port slot on the Pi's long front wall, spanning the mini HDMI + both
     micro-USB (data/OTG and power) connectors as a single opening — see
     [Why one slot instead of three?](#why-one-slot-instead-of-three)
+  - A microSD card slot on the Pi's short end wall (opposite the wire/relay side), so you can
+    swap the card without opening the case — see
+    [Sizing the microSD slot](#sizing-the-microsd-slot)
   - A wire-exit slot on the relay's end wall for the four DPS/AUX dry-contact leads
     heading to the UA Hub Door Mini
   - A second wire slot on the back wall for the optional physical door-sensor cross-check lead
@@ -51,6 +54,27 @@ short 30mm end wall, when on the real board these three connectors run along a l
 Rather than guess three exact positions again, the model now cuts **one generous continuous
 slot** spanning the whole connector cluster on the correct long edge. It's more print-forgiving
 and is the same approach most maker-community Pi Zero enclosures use for this reason.
+
+## Sizing the microSD slot
+
+The first version of this model had no way to reach the microSD card at all — you'd have had to
+unscrew the standoffs and lift the whole board out to swap it. Since there's still no official
+drawing of exactly where the Zero's microSD slot sits, its size and placement here were
+cross-checked against a real, printed-and-proven reference case: [Raspberry Pi Zero Case / Zero W
+Case / Zero 2 W Case, Printables model
+106295](https://www.printables.com/model/106295), by ray-casting its STL to map where its
+shell is actually open vs. solid (its mesh is a fully watertight, manifold solid, so the holes
+don't show up as simple boundary edges — each candidate wall was scanned with a fine grid of
+rays cast along the wall's normal, and any cell with no hit near the wall's surface was marked
+open). That scan also confirmed the port-cluster fix above: the reference case cuts its mini
+HDMI/USB openings into the long wall too, not the short one.
+
+For the microSD slot specifically, the reference case cuts one wide, low, roughly centered
+opening (about 55% of the board's width) into the short end wall — consistent with the Zero's
+microSD holder sitting on the underside of the PCB near that edge. This model follows the same
+approach: a single generous slot on the Pi zone's short end wall (`x = 0` face, opposite the
+wire/relay side), sized and positioned by the `pi_sd_slot_*` parameters in `enclosure.scad`,
+rather than a tight window sized to one exact microSD holder model/orientation.
 
 ## Recommended workflow: print → test-fit → adjust
 
