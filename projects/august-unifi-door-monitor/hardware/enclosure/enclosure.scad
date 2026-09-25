@@ -11,10 +11,12 @@
 // Or open in the OpenSCAD GUI and use the `part` variable below / F5 preview.
 //
 // IMPORTANT — verify before printing:
-//   Board hole/port positions below are best-effort from public reference
-//   drawings, not a caliper measurement of your exact board revision.
-//   Print the base only first, test-fit your actual Pi Zero W and relay
-//   module, then adjust the parameters and reprint. See
+//   Pi Zero W board outline + mounting-hole spacing are taken from the official
+//   Raspberry Pi Foundation mechanical drawing (RPI-ZERO-V1_2) and can be
+//   trusted as-is. The relay module's exact hole spacing (varies slightly
+//   between hardware batches) and the Pi's port-cutout positions (not
+//   dimensioned in that drawing) are still best-effort — print the base only
+//   first, test-fit your actual hardware, then adjust and reprint. See
 //   ../../docs/enclosure.md for the recommended print-test-adjust workflow.
 // ============================================================================
 
@@ -30,16 +32,23 @@ lip_gap         = 1.3;   // wall material removed at the top step for the lid sk
 corner_r        = 3.0;   // outer corner rounding radius
 
 // ---- Raspberry Pi Zero W -----------------------------------------------------
+// Board outline + mounting holes verified against the official Raspberry Pi
+// Foundation mechanical drawing (RPI-ZERO-V1_2, Mike Stimson/James Adams,
+// 23/09/2015): https://github.com/ikorb/raspi-documentation/blob/master/hardware/raspberrypi/mechanical/Raspberry-Pi-Zero-V1.2-Mechanical.pdf
+// Board: 65 x 30mm, corner radius 3.0mm. 4x M2.5 holes drilled to dia 2.75mm
+// +/-0.05mm, each inset 3.5mm from its nearest edge in both X and Y (giving
+// 58mm x 23mm hole-to-hole spacing). Pi Zero W shares this same PCB outline.
 pi_len          = 65;    // board length (mm), along the port edge
 pi_wid          = 30;    // board width (mm)
 pi_standoff_h   = 3.0;   // standoff height under the board (clears bottom-side solder)
-pi_hole_d       = 2.8;   // clearance hole for M2.5 self-tapping screw
-pi_hole_inset_x = 3.5;   // hole center inset from short edges
-pi_hole_inset_y = 3.5;   // hole center inset from long edges
+pi_hole_d       = 2.9;   // clearance hole for M2.5 self-tapping screw (board hole is dia 2.75mm)
+pi_hole_inset_x = 3.5;   // hole center inset from short edges (per official drawing)
+pi_hole_inset_y = 3.5;   // hole center inset from long edges (per official drawing)
 pi_zone_pad     = 4;     // clearance around the Pi footprint inside the case
 
 // Port cutouts along the Pi's port-side edge (mini HDMI, USB, micro-USB PWR).
-// Positions are approximate + intentionally oversized — verify/trim to fit.
+// NOT covered by the official mechanical drawing above (outline/holes only) —
+// positions are approximate + intentionally oversized. Verify/trim to fit.
 pi_port_wall_h    = 6;     // cutout height (mm)
 pi_port_wall_zlo  = pi_standoff_h + 1; // cutout bottom Z, just above the board
 pi_ports = [ // [center_x_from_left, width]

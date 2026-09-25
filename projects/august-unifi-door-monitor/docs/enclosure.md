@@ -40,10 +40,12 @@ clean manifold solids, no errors): [`hardware/enclosure/stl/base.stl`](../hardwa
 
 ## Recommended workflow: print → test-fit → adjust
 
-The board hole positions and port-cutout locations in the model are best-effort from public
-reference dimensions, **not** a caliper measurement of your exact board revisions — SunFounder
-relay boards in particular vary slightly between hardware batches. Don't commit to a full
-production print before checking fit:
+The Raspberry Pi Zero W's board outline and mounting-hole positions are now verified against the
+official Raspberry Pi Foundation mechanical drawing (RPI-ZERO-V1_2) — no need to re-check those.
+What's still unverified is the relay module's exact hole spacing (varies slightly between
+SunFounder hardware batches) and the Pi's port-cutout positions (not dimensioned in the official
+drawing, since it only covers the board outline/holes). Don't commit to a full production print
+before checking those:
 
 1. Use the pre-rendered [`stl/base.stl`](../hardware/enclosure/stl/base.stl), or re-render it
    yourself: `openscad -o base.stl -D 'part="base"' enclosure.scad`
