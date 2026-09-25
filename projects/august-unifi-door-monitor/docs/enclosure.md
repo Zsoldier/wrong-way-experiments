@@ -21,7 +21,9 @@ clean manifold solids, no errors): [`hardware/enclosure/stl/base.stl`](../hardwa
 - **Lid:** friction-fit (no screws) — a recessed step in the base walls accepts a skirt
   molded onto the underside of the lid. No supports needed for either part.
 - **Cutouts:**
-  - Three port openings on the Pi's end wall (mini HDMI / USB / micro-USB power)
+  - One continuous port slot on the Pi's long front wall, spanning the mini HDMI + both
+    micro-USB (data/OTG and power) connectors as a single opening — see
+    [Why one slot instead of three?](#why-one-slot-instead-of-three)
   - A wire-exit slot on the relay's end wall for the four DPS/AUX dry-contact leads
     heading to the UA Hub Door Mini
   - A second wire slot on the back wall for the optional physical door-sensor cross-check lead
@@ -38,14 +40,25 @@ clean manifold solids, no errors): [`hardware/enclosure/stl/base.stl`](../hardwa
 | Supports | None required |
 | Orientation | Print both parts flat, largest face down |
 
+## Why one slot instead of three?
+
+Raspberry Pi has never published an official mechanical drawing with exact connector positions
+for the Zero/Zero W — only the board outline and mounting holes are documented (the same
+official RPI-ZERO-V1_2 drawing referenced in `enclosure.scad`'s comments). An earlier revision of this model tried
+to cut three separate, precisely-positioned windows for the mini HDMI and two micro-USB
+connectors, using guessed coordinates — and got the wall wrong entirely (it cut them into the
+short 30mm end wall, when on the real board these three connectors run along a long 65mm edge).
+Rather than guess three exact positions again, the model now cuts **one generous continuous
+slot** spanning the whole connector cluster on the correct long edge. It's more print-forgiving
+and is the same approach most maker-community Pi Zero enclosures use for this reason.
+
 ## Recommended workflow: print → test-fit → adjust
 
 The Raspberry Pi Zero W's board outline and mounting-hole positions are now verified against the
 official Raspberry Pi Foundation mechanical drawing (RPI-ZERO-V1_2) — no need to re-check those.
 What's still unverified is the relay module's exact hole spacing (varies slightly between
-SunFounder hardware batches) and the Pi's port-cutout positions (not dimensioned in the official
-drawing, since it only covers the board outline/holes). Don't commit to a full production print
-before checking those:
+SunFounder hardware batches) and the exact height/reach of the port slot for your specific board
+revision. Don't commit to a full production print before checking those:
 
 1. Use the pre-rendered [`stl/base.stl`](../hardware/enclosure/stl/base.stl), or re-render it
    yourself: `openscad -o base.stl -D 'part="base"' enclosure.scad`

@@ -46,16 +46,19 @@ pi_hole_inset_x = 3.5;   // hole center inset from short edges (per official dra
 pi_hole_inset_y = 3.5;   // hole center inset from long edges (per official drawing)
 pi_zone_pad     = 4;     // clearance around the Pi footprint inside the case
 
-// Port cutouts along the Pi's port-side edge (mini HDMI, USB, micro-USB PWR).
-// NOT covered by the official mechanical drawing above (outline/holes only) —
-// positions are approximate + intentionally oversized. Verify/trim to fit.
-pi_port_wall_h    = 6;     // cutout height (mm)
-pi_port_wall_zlo  = pi_standoff_h + 1; // cutout bottom Z, just above the board
-pi_ports = [ // [center_x_from_left, width]
-  [10, 8],   // mini HDMI
-  [32, 8],   // USB (OTG)
-  [54, 9],   // micro-USB PWR IN
-];
+// Port cutout on the Pi's port-side edge (mini HDMI + 2x micro-USB: OTG/data
+// and PWR IN). On the real board these three connectors run along one LONG
+// (65mm) edge of the Pi — NOT a short edge — and Raspberry Pi has never
+// published an official mechanical drawing with exact connector positions
+// (only the board outline + mounting holes are documented, see note above).
+// Rather than guess three precise per-connector windows and risk them being
+// wrong for your exact board revision, this cuts ONE generous continuous
+// slot spanning the whole connector cluster — the common, print-forgiving
+// approach used by most Pi Zero enclosures. See docs/enclosure.md.
+pi_port_slot_x0  = 4;                    // slot start, from the Pi board's left edge (mm)
+pi_port_slot_x1  = 61;                   // slot end, from the Pi board's left edge (mm)
+pi_port_slot_h   = 9;                    // slot height (mm) — clears HDMI + both micro-USB bodies
+pi_port_slot_zlo = pi_standoff_h;        // slot bottom Z, right at the board's top surface
 
 // ---- 2-Channel Relay Module (e.g. SunFounder, ~50.5 x 38.5 x 18.5mm) --------
 relay_len         = 50.5;
@@ -113,6 +116,8 @@ module standoff(h, hole_d, outer_d = 6) {
 // ============================================================================
 
 module base() {
+  pi_origin = [wall + pi_zone_pad, wall + (inner_d - pi_wid)/2];
+
   difference() {
     union() {
       // Outer shell
@@ -131,12 +136,13 @@ module base() {
       linear_extrude(height = lip_depth + 1)
         rounded_rect(inner_w + 2*lip_gap, inner_d + 2*lip_gap, max(corner_r - wall + lip_gap, 0.1));
 
-    // --- Port cutouts on the Pi end wall (x = 0 face) ---
-    for (p = pi_ports) {
-      cx = p[0]; cw = p[1];
-      translate([-1, wall + pi_zone_pad + cx - cw/2, pi_port_wall_zlo])
-        cube([wall + 2, cw, pi_port_wall_h]);
-    }
+    // --- Port cutout on the Pi's port-side wall (y = 0 face) ---
+    // A single continuous slot spanning the mini HDMI + 2x micro-USB
+    // connector cluster, positioned along the Pi's LONG (65mm) edge — see
+    // the pi_port_slot_* comments above for why this isn't 3 separate
+    // precisely-positioned windows.
+    translate([pi_origin[0] + pi_port_slot_x0, -1, pi_port_slot_zlo])
+      cube([pi_port_slot_x1 - pi_port_slot_x0, wall + 2, pi_port_slot_h]);
 
     // --- Wire exit slot on the relay end wall (x = outer_w face) ---
     translate([outer_w - wall - 1, wall + inner_d/2 - wire_slot_w/2, floor_t + 2])
@@ -149,7 +155,6 @@ module base() {
   }
 
   // --- Pi Zero W standoffs ---
-  pi_origin = [wall + pi_zone_pad, wall + (inner_d - pi_wid)/2];
   for (dx = [pi_hole_inset_x, pi_len - pi_hole_inset_x])
     for (dy = [pi_hole_inset_y, pi_wid - pi_hole_inset_y])
       translate([pi_origin[0] + dx, pi_origin[1] + dy, floor_t])
