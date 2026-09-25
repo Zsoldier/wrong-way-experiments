@@ -1,0 +1,15 @@
+[Unit]
+Description=August to UniFi Access Door Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/wrong-way-experiments/projects/august-unifi-door-monitor/src
+ExecStart=/home/pi/wrong-way-experiments/projects/august-unifi-door-monitor/.venv/bin/python3 monitor.py --config /home/pi/wrong-way-experiments/projects/august-unifi-door-monitor/config.yaml
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

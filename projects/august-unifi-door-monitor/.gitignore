@@ -1,0 +1,6 @@
+config.yaml
+august_token_cache.json
+monitor.log
+.venv/
+__pycache__/
+*.pyc

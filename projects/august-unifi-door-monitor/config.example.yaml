@@ -1,0 +1,28 @@
+# Copy to config.yaml and fill in real values. Do not commit config.yaml (see .gitignore).
+
+august:
+  login_method: email        # "email" or "phone"
+  username: "you@example.com"
+  password: "changeme"
+  install_id: null            # optional: set to skip repeated 2FA verification
+  token_cache_file: "august_token_cache.json"
+  lock_name: "Front Door"     # must match the name shown in the August app
+
+polling:
+  interval_seconds: 30
+  debounce_reads: 2           # consecutive matching reads required before acting
+  backoff_max_seconds: 300
+
+gpio:
+  dps_relay_pin: 17           # BCM numbering
+  aux_relay_pin: 27
+  active_high: false          # most cheap relay boards trigger on LOW
+  mode: hold                  # "hold" = maintain contact while state is true; "pulse" = brief close
+
+  # Optional physical cross-check reed switch (see docs/wiring-diagram.md)
+  door_sensor_pin: null       # e.g. 4, or null to disable
+  door_sensor_pull_up: true
+
+logging:
+  level: INFO
+  file: "monitor.log"
