@@ -6,6 +6,12 @@ Relay Module`](https://www.amazon.com/dp/B00E0NTPP4) referenced in this project'
 
 File: [`hardware/enclosure/enclosure.scad`](../hardware/enclosure/enclosure.scad)
 
+Pre-rendered, ready-to-slice files (verified with OpenSCAD 2026.09.23 — both parts render as
+clean manifold solids, no errors): [`hardware/enclosure/stl/base.stl`](../hardware/enclosure/stl/base.stl),
+[`hardware/enclosure/stl/lid.stl`](../hardware/enclosure/stl/lid.stl)
+
+![Base and lid, exploded view](../hardware/enclosure/renders/preview_both.png)
+
 ## Overview
 
 - **Footprint:** ~144 x 51 mm
@@ -39,7 +45,8 @@ reference dimensions, **not** a caliper measurement of your exact board revision
 relay boards in particular vary slightly between hardware batches. Don't commit to a full
 production print before checking fit:
 
-1. Render/export just the base: `openscad -o base.stl -D 'part="base"' enclosure.scad`
+1. Use the pre-rendered [`stl/base.stl`](../hardware/enclosure/stl/base.stl), or re-render it
+   yourself: `openscad -o base.stl -D 'part="base"' enclosure.scad`
 2. Print the base only.
 3. Test-fit your actual Pi Zero W and relay module on the standoffs, and check the port cutouts
    line up well enough for your cables/connectors.
