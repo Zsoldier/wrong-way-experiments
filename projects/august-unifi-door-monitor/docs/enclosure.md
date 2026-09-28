@@ -29,9 +29,11 @@ clean manifold solids, no errors): [`hardware/enclosure/stl/base.stl`](../hardwa
     [Sizing the microSD slot](#sizing-the-microsd-slot)
   - A wire-exit slot on the relay's end wall for the four DPS/AUX dry-contact leads
     heading to the UA Hub Door Mini
-  - A second wire slot on the back wall for the optional physical door-sensor cross-check lead
+  - One rectangular opening on the back wall that doubles as the exit for the optional
+    physical door-sensor cross-check lead and a finger hold for popping the lid off. (It used
+    to be a slot plus a round thumb notch; the round top needed supports, so the two were
+    merged into one flat-topped rectangle that bridges cleanly.)
   - Ventilation slits in the lid over the relay's footprint (it runs faintly warm under load)
-  - A thumb notch cut into the back wall so you can pop the lid off without a tool
 
 ## Print settings (FDM, PLA or PETG)
 

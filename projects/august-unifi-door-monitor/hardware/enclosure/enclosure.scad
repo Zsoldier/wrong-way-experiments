@@ -86,6 +86,10 @@ relay_zone_pad    = 4;
 wire_slot_w = 14;
 wire_slot_h = 6;
 
+// Back-wall opening (sensor lead exit + lid finger access)
+back_slot_w = 14;
+back_slot_h = 16;
+
 // ---- Layout: Pi zone | wire channel | Relay zone, side by side -------------
 gap_between_zones = 8;
 
@@ -166,10 +170,11 @@ module base() {
     translate([outer_w - wall - 1, wall + inner_d/2 - wire_slot_w/2, floor_t + 2])
       cube([wall + 2, wire_slot_w, wire_slot_h]);
 
-    // --- Optional second wire slot on the back long wall for the physical
-    //     door-sensor cross-check lead (see docs/wiring-diagram.md) ---
-    translate([wall + inner_w/2 - wire_slot_w/2, outer_d - wall - 1, floor_t + 2])
-      cube([wire_slot_w, wall + 2, wire_slot_h]);
+    // --- Back-wall opening: optional door-sensor cross-check lead exit
+    //     (see docs/wiring-diagram.md) + finger access for lifting the lid.
+    //     Plain rectangle (flat bridged top) so it prints without supports.
+    translate([wall + inner_w/2 - back_slot_w/2, outer_d - wall - 1, floor_t + 2])
+      cube([back_slot_w, wall + 2, back_slot_h]);
   }
 
   // --- Pi Zero W standoffs ---
@@ -223,28 +228,16 @@ module lid() {
   }
 }
 
-module thumb_notch() {
-  translate([outer_w/2, outer_d, wall_h/2])
-    rotate([90, 0, 0])
-      cylinder(h = 6, r = 6, $fn = 32);
-}
-
 // ============================================================================
 // Render selection
 // ============================================================================
 
 if (part == "base") {
-  difference() {
-    base();
-    thumb_notch();
-  }
+  base();
 } else if (part == "lid") {
   lid();
 } else {
-  difference() {
-    base();
-    thumb_notch();
-  }
+  base();
   translate([outer_w + 15, 0, 0])
     lid();
 }
