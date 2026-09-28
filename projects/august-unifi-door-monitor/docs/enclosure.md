@@ -100,9 +100,22 @@ revision. Don't commit to a full production print before checking those:
 
 ## Assembly
 
-1. Screw the Pi Zero W onto its standoffs with M2.5 self-tapping screws (or M2.5 machine screws
-   if you tapped the standoff holes).
-2. Screw the relay module onto its standoffs with M3 self-tapping screws.
+The standoff holes are printed as **pilot holes at ISO tap-drill size** (M2.5 → ⌀2.1 mm,
+M3 → ⌀2.5 mm), running ~4.4 mm deep (3 mm standoff + 1.4 mm into the floor). Printed threads
+aren't modeled because FDM can't hold a 0.45–0.5 mm pitch. Either:
+
+- **Tap them:** run an M2.5 / M3 hand tap in slowly, backing out every half turn to clear
+  chips, then use machine screws (M2.5×6 for the Pi, M3×6 for the relay). Best if you'll be
+  removing the boards often.
+- **Or skip the tap:** drive self-tapping / thread-forming screws for plastic straight in.
+  They cut their own threads.
+
+If a pilot comes out too tight to start a screw, open it slightly with a drill bit the same
+size by hand. If it's loose, lower `pi_hole_d` / `relay_hole_d` by 0.1 mm and reprint.
+
+1. Screw the Pi Zero W onto its standoffs (M2.5 machine screws in tapped holes, or M2.5
+   self-tapping screws).
+2. Screw the relay module onto its standoffs (M3 machine or self-tapping screws, as above).
 3. Wire the Pi's GPIO to the relay module's VCC/GND/IN1/IN2 per
    [`../docs/wiring-diagram.md`](../docs/wiring-diagram.md), routing the jumpers through the
    open channel between the two zones.

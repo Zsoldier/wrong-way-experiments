@@ -41,7 +41,7 @@ corner_r        = 3.0;   // outer corner rounding radius
 pi_len          = 65;    // board length (mm), along the port edge
 pi_wid          = 30;    // board width (mm)
 pi_standoff_h   = 3.0;   // standoff height under the board (clears bottom-side solder)
-pi_hole_d       = 2.9;   // clearance hole for M2.5 self-tapping screw (board hole is dia 2.75mm)
+pi_hole_d       = 2.1;   // M2.5 pilot hole: tap it, or drive a self-tapping screw (board hole is dia 2.75mm)
 pi_hole_inset_x = 3.5;   // hole center inset from short edges (per official drawing)
 pi_hole_inset_y = 3.5;   // hole center inset from long edges (per official drawing)
 pi_zone_pad     = 4;     // clearance around the Pi footprint inside the case
@@ -78,7 +78,7 @@ relay_len         = 50.5;
 relay_wid         = 38.5;
 relay_height      = 18.5;  // tallest point above its own PCB underside
 relay_standoff_h  = 3.0;
-relay_hole_d      = 3.4;   // clearance hole for M3 screw (board holes ~3.1mm)
+relay_hole_d      = 2.5;   // M3 pilot hole: tap it, or drive a self-tapping screw (board holes ~3.1mm)
 relay_hole_inset  = 3.0;   // hole center inset from each edge (approx — verify)
 relay_zone_pad    = 4;
 
@@ -121,6 +121,15 @@ module rounded_rect(w, d, r) {
   }
 }
 
+// Standoff mounting holes are pilot holes sized to the standard ISO tap-drill
+// diameter (M2.5 -> 2.05mm, M3 -> 2.5mm), rather than modeled threads: FDM
+// can't reproduce 0.45-0.5mm pitch threads reliably. Cut threads with a tap,
+// or just drive a self-tapping/thread-forming screw straight in. Printed holes
+// usually come out slightly undersize, which only helps the screw bite.
+// The pilot continues `pilot_floor_depth` into the floor for extra thread
+// engagement (standoff height alone is only ~3mm).
+pilot_floor_depth = 1.4;  // leaves floor_t - 1.4 = 0.8mm of solid floor below
+
 module standoff(h, hole_d, outer_d = 6) {
   difference() {
     cylinder(h = h, d = outer_d, $fn = 32);
@@ -134,7 +143,25 @@ module standoff(h, hole_d, outer_d = 6) {
 
 module base() {
   pi_origin = [wall + pi_zone_pad, wall + (inner_d - pi_wid)/2];
+  relay_origin = [wall + pi_zone_w + gap_between_zones + relay_zone_pad,
+                   wall + (inner_d - relay_wid)/2];
 
+  difference() {
+    base_body(pi_origin, relay_origin);
+
+    // Extend each standoff's pilot hole down into the floor
+    for (dx = [pi_hole_inset_x, pi_len - pi_hole_inset_x])
+      for (dy = [pi_hole_inset_y, pi_wid - pi_hole_inset_y])
+        translate([pi_origin[0] + dx, pi_origin[1] + dy, floor_t - pilot_floor_depth])
+          cylinder(h = pilot_floor_depth + 0.5, d = pi_hole_d, $fn = 24);
+    for (dx = [relay_hole_inset, relay_len - relay_hole_inset])
+      for (dy = [relay_hole_inset, relay_wid - relay_hole_inset])
+        translate([relay_origin[0] + dx, relay_origin[1] + dy, floor_t - pilot_floor_depth])
+          cylinder(h = pilot_floor_depth + 0.5, d = relay_hole_d, $fn = 24);
+  }
+}
+
+module base_body(pi_origin, relay_origin) {
   difference() {
     union() {
       // Outer shell
@@ -184,8 +211,6 @@ module base() {
         standoff(pi_standoff_h, pi_hole_d);
 
   // --- Relay module standoffs ---
-  relay_origin = [wall + pi_zone_w + gap_between_zones + relay_zone_pad,
-                   wall + (inner_d - relay_wid)/2];
   for (dx = [relay_hole_inset, relay_len - relay_hole_inset])
     for (dy = [relay_hole_inset, relay_wid - relay_hole_inset])
       translate([relay_origin[0] + dx, relay_origin[1] + dy, floor_t])
